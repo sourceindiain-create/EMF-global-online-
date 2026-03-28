@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string
+    //   - role: string (required, enum: student, client, admin, partner, team)
+    //   - photoURL: string
+    //   - createdAt: timestamp
+    //
+    // Collection: jobs
+    // Document ID: {jobId}
+    // Fields:
+    //   - title: string (required)
+    //   - description: string
+    //   - type: string (required, enum: job, skill, land, animal, service)
+    //   - authorId: string (required)
+    //   - authorName: string
+    //   - createdAt: timestamp
+    //   - location: string
+    //   - price: string
+    //
+    // Collection: products
+    // Document ID: {productId}
+    // Fields:
+    //   - name: string (required)
+    //   - description: string
+    //   - price: number (required)
+    //   - category: string (required, enum: agriculture, handmade, ayurveda)
+    //   - imageUrl: string
+    //   - stock: number
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "sourceindia.in@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid == request.auth.uid &&
+             data.role in ['student', 'client', 'admin', 'partner', 'team'];
+    }
+
+    function isValidJob(data) {
+      return data.keys().hasAll(['title', 'type', 'authorId']) &&
+             data.authorId == request.auth.uid &&
+             data.type in ['job', 'skill', 'land', 'animal', 'service'];
+    }
+
+    // Rules
+    match /users/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(uid) && isValidUser(request.resource.data);
+      allow update: if (isOwner(uid) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /jobs/{jobId} {
+      allow read: if true; // Publicly readable
+      allow create: if isAuthenticated() && isValidJob(request.resource.data);
+      allow update: if (isAuthenticated() && resource.data.authorId == request.auth.uid && isValidJob(request.resource.data)) || isAdmin();
+      allow delete: if (isAuthenticated() && resource.data.authorId == request.auth.uid) || isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /startups/{startupId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if (isAuthenticated() && resource.data.ownerId == request.auth.uid) || isAdmin();
+    }
+
+    match /library/{bookId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

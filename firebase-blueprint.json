@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user information and roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "client", "admin", "partner", "team"] },
+        "photoURL": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "JobPost": {
+      "title": "Job Post",
+      "description": "Stores job, skill, land, animal, or service postings.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["job", "skill", "land", "animal", "service"] },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "location": { "type": "string" },
+        "price": { "type": "string" }
+      },
+      "required": ["title", "type", "authorId"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Stores e-commerce products.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string", "enum": ["agriculture", "handmade", "ayurveda"] },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "stock": { "type": "number" }
+      },
+      "required": ["name", "price", "category"]
+    },
+    "StartupProject": {
+      "title": "Startup Project",
+      "description": "Stores startup club projects.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["idea", "development", "launched"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId", "status"]
+    },
+    "LibraryBook": {
+      "title": "Library Book",
+      "description": "Stores digital library books.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "category": { "type": "string" },
+        "downloadUrl": { "type": "string", "format": "uri" }
+      },
+      "required": ["title", "author"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profiles indexed by UID."
+    },
+    "/jobs/{jobId}": {
+      "schema": "JobPost",
+      "description": "Job and service postings."
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "E-commerce products."
+    },
+    "/startups/{startupId}": {
+      "schema": "StartupProject",
+      "description": "Startup projects."
+    },
+    "/library/{bookId}": {
+      "schema": "LibraryBook",
+      "description": "Digital library books."
+    }
+  }
+}

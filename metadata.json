@@ -1,0 +1,5 @@
+{
+  "name": "EMF Global Super App",
+  "description": "A comprehensive Super App for EMF Global Technology & Research, featuring jobs, agriculture, education, health, and AI-driven services.",
+  "requestFramePermissions": ["microphone", "geolocation"]
+}
